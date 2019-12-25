@@ -327,8 +327,8 @@ def set_window():
     # 创建确定按钮
     def save():
         channel_dict = {	'中国移动':'@cmcc',
-        					'中国电信':'@telecom',
-        					'校园内网':'default'}
+        			        '中国电信':'@telecom',
+        			        '校园内网':'default'}
         usr_dict = {'usrname':e1.get(),
                     'password':e2.get(),
                     'channelshow':channelshow.get(),
