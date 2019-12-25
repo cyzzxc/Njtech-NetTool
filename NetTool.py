@@ -23,23 +23,23 @@ def resource_path(relative_path):
 
 # 开机启动
 def start_up():
-    name = 'NetTool'  # 要添加的项值名称
-    path =  os.path.split(os.path.realpath(__file__))[0]+'\\NetTool.exe' # 要添加的路径
+    APP_NAME = 'NetTool'  # 要添加的项值名称
+    app_path =  os.path.split(os.path.realpath(__file__))[0]+'\\NetTool.exe' # 要添加的路径
 
     # 注册表项名
-    KeyName = 'Software\\Microsoft\\Windows\\CurrentVersion\\Run'
+    APP_KEY_NAME = 'Software\\Microsoft\\Windows\\CurrentVersion\\Run'
     
     # 异常处理
     try:
-        key = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER,  KeyName, 0, win32con.KEY_ALL_ACCESS)
+        APP_KEY = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, APP_KEY_NAME, 0, win32con.KEY_ALL_ACCESS)
         if usr['startup']:
-            win32api.RegSetValueEx(key, name, 0, win32con.REG_SZ, f'"{path}"')
+            win32api.RegSetValueEx(APP_KEY, APP_NAME, 0, win32con.REG_SZ, f'"{app_path}"')
             write_log('开机启动设置成功')
-            write_log('开机启动路径：'+path,0)
+            write_log('开机启动路径：'+app_path, 0)
         else:
-            win32api.RegDeleteValue(key,name)
+            win32api.RegDeleteValue(APP_KEY, APP_NAME)
             write_log('开机启动已经移除')
-        win32api.RegCloseKey(key)
+        win32api.RegCloseKey(APP_KEY)
 
 
     except:
@@ -54,9 +54,9 @@ def quit():
 def write_log(log,insert=1): # log为日志 insert参数控制是否插入text窗口
     time_now = int(time.time())
     time_local = time.localtime(time_now)
-    timetamp = time.strftime("%Y-%m-%d %H:%M:%S",time_local)
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S",time_local)
     with open('log.txt','a') as text:
-        content = f'[{timetamp}] {log}\n'
+        content = f'[{timestamp}] {log}\n'
         text.write(content)
     if insert:
         t.config(state='normal')
@@ -74,7 +74,7 @@ def usr_read():
     global usr
     if os.path.exists('c:/usr_set.pickle'):
         with open('c:/usr_set.pickle', 'rb') as file:
-            usr =pickle.load(file)
+            usr = pickle.load(file)
     else: 
         usr    = {'usrname':'',
                   'password':'',
@@ -96,7 +96,7 @@ def auto_login():
             net_login()
             break
         elif code == 1:
-            write_log(f'自动登录:在 {i} 秒停止,已成功联网',1)
+            write_log(f'自动登录:在 {i} 秒停止,已成功联网')
             break
         else:
             write_log('无法连接至网络')
@@ -113,9 +113,9 @@ def auto_login():
 def net_login():
     # get请求，拉取流水号信息
     s = requests.Session()
-    url = 'https://i.njtech.edu.cn'
+    LOGIN_URL = 'https://i.njtech.edu.cn'
     try:
-        r = s.get(url)
+        r = s.get(LOGIN_URL)
     except:
         print('未连接wifi')
     else:
@@ -125,15 +125,15 @@ def net_login():
         execution = bs.find('',{'name':'execution'}).attrs['value']
 
         # post请求
-        params = {'username': usr['usrname'],
-            'password': usr['password'],
-            'channelshow': usr['channelshow'],
-            'channel': usr['channel'],
-            'lt':f'{lt}',
-            'execution': f'{execution}',
-            '_eventId': 'submit',
-            'login': '登录'}
-        s.post(r.url,params)
+        params = {	'username': usr['usrname'],
+            		'password': usr['password'],
+            		'channelshow': usr['channelshow'],
+            		'channel': usr['channel'],
+            		'lt':f'{lt}',
+            		'execution': f'{execution}',
+            		'_eventId': 'submit',
+            		'login': '登录'}
+        s.post(r.url, params)
 
     time.sleep(2)
     if net_test():
@@ -218,11 +218,11 @@ def main_window():
             pass
 
     # 创建按钮
-    b1 = ttk.Button(frm,text='连接',width=18,command=button_login)
-    b1.pack(side='left',padx=12,pady=10)
-    b2 = ttk.Button(frm,text='后台运行',width=18,command=window.withdraw)
-    b2.pack(side='right',padx=12,pady=10)
-    b3 = ttk.Button(window,text='设置',width=40,command=set_window)
+    b1 = ttk.Button(frm, text='连接', width=18, command=button_login)
+    b1.pack(side='left', padx=12, pady=10)
+    b2 = ttk.Button(frm, text='后台运行', width=18, command=window.withdraw)
+    b2.pack(side='right', padx=12, pady=10)
+    b3 = ttk.Button(window, text='设置', width=40, command=set_window)
     b3.pack()
 
     def window_quit():
@@ -269,14 +269,14 @@ def set_window():
     frm7.pack(side='right')
 
 
-    name = tk.StringVar()
-    name.set(usr['usrname'])
-    psw = tk.StringVar()
-    psw.set(usr['password'])
+    namebox = tk.StringVar()
+    namebox.set(usr['usrname'])
+    pswbox = tk.StringVar()
+    pswbox.set(usr['password'])
 
-    e1 = ttk.Entry(frm1,textvariable=name)
+    e1 = ttk.Entry(frm1, textvariable=namebox)
     e1.pack(side='right')
-    e2 = ttk.Entry(frm2,show='*',textvariable=psw)
+    e2 = ttk.Entry(frm2,show='*', textvariable=pswbox)
     e2.pack(side='right')
 
     # 下拉选单
@@ -288,19 +288,19 @@ def set_window():
     if usr['channelshow'] != '':
         ChannelChosen.current(channel_list.index(usr['channelshow']))
 
-    l1 = tk.Label(frm1,text='账号：')
+    l1 = tk.Label(frm1, text='账号：')
     l1.pack(side='left')
-    l2 = tk.Label(frm2,text='密码：')
+    l2 = tk.Label(frm2, text='密码：')
     l2.pack(side='left')
-    l3 = tk.Label(frm3,text='网络：')
+    l3 = tk.Label(frm3, text='网络：')
     l3.pack(side='left')
-    l4 = tk.Label(frm4,text='防掉线')
+    l4 = tk.Label(frm4, text='防掉线')
     l4.pack(side='left')
-    l5 = tk.Label(frm5,text='自动登录')
+    l5 = tk.Label(frm5, text='自动登录')
     l5.pack(side='left')
-    l6 = tk.Label(frm6,text='开机启动')
+    l6 = tk.Label(frm6, text='开机启动')
     l6.pack(side='left')
-    l7 = tk.Label(frm7,text='自动隐藏')
+    l7 = tk.Label(frm7, text='自动隐藏')
     l7.pack(side='left')
 
     # 创建 CheckButton
@@ -314,19 +314,21 @@ def set_window():
     var3.set(usr['startup'])
     var4.set(usr['autowithdraw'])
 
-    c1 = tk.Checkbutton(frm4,variable=var1, onvalue=1, offvalue=0)
+    c1 = tk.Checkbutton(frm4, variable=var1, onvalue=1, offvalue=0)
     c1.pack(side='right')
-    c2 = tk.Checkbutton(frm5,variable=var2, onvalue=1, offvalue=0)
+    c2 = tk.Checkbutton(frm5, variable=var2, onvalue=1, offvalue=0)
     c2.pack(side='right')
 
-    c3 = tk.Checkbutton(frm6,variable=var3, onvalue=1, offvalue=0)
+    c3 = tk.Checkbutton(frm6, variable=var3, onvalue=1, offvalue=0)
     c3.pack(side='right')
-    c4 = tk.Checkbutton(frm7,variable=var4, onvalue=1, offvalue=0)
+    c4 = tk.Checkbutton(frm7, variable=var4, onvalue=1, offvalue=0)
     c4.pack(side='right')
 
     # 创建确定按钮
     def save():
-        channel_dict = {'中国移动':'@cmcc','中国电信':'@telecom','校园内网':'default'}
+        channel_dict = {'中国移动':'@cmcc',
+        				'中国电信':'@telecom',
+        				'校园内网':'default'}
         usr_dict = {'usrname':e1.get(),
                     'password':e2.get(),
                     'channelshow':channelshow.get(),
@@ -340,10 +342,10 @@ def set_window():
 
         start_up()
 
-        name.get()
-        psw.get()
+        namebox.get()
+        pswbox.get()
     
-    b = ttk.Button(window_setinfo,text='保存',width=18,command=save)
+    b = ttk.Button(window_setinfo, text='保存', width=18, command=save)
     b.pack(pady=15)
 
 # 最小化 使用时请将 winico0.6 文件夹放置在python安装目录的 tcl 文件夹下
@@ -371,8 +373,8 @@ def tray():
     menu = tk.Menu(window, tearoff=0)
     menu.add_command(label=u'显示主页面', command=window.deiconify)
     menu.add_command(label=u'设置', command=set_window)
-    menu.add_command(label=u'关于',command=about)
-    menu.add_command(label=u'退出', command=quit)
+    menu.add_command(label=u'关于', command=about)
+    menu.add_command(label=u'退出', com mand=quit)
 
 if __name__ == '__main__':
 
@@ -382,8 +384,8 @@ if __name__ == '__main__':
     tray()
 
     if usr['autologin']:
-        threading.Thread(target=auto_login,daemon=True).start()
+        threading.Thread(target=auto_login, daemon=True).start()
     if usr['stayonline']:
-        threading.Thread(target=stay_online,daemon=True).start()
+        threading.Thread(target=stay_online, daemon=True).start()
     window.mainloop()
 
