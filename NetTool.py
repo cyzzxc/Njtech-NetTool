@@ -346,7 +346,7 @@ def set_window():
     b = ttk.Button(window_setinfo,text='保存',width=18,command=save)
     b.pack(pady=15)
 
-# 最小化
+# 最小化 使用时请将 winico0.6 文件夹放置在python安装目录的 tcl 文件夹下
 def tray():
     def menu_func(event,x,y):
         if event == 'WM_RBUTTONDOWN':    # 监听右击事件
