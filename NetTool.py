@@ -374,7 +374,7 @@ def tray():
     menu.add_command(label=u'显示主页面', command=window.deiconify)
     menu.add_command(label=u'设置', command=set_window)
     menu.add_command(label=u'关于', command=about)
-    menu.add_command(label=u'退出', com mand=quit)
+    menu.add_command(label=u'退出', command=quit)
 
 if __name__ == '__main__':
 
