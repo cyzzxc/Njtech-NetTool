@@ -50,6 +50,12 @@ def quit():
     window.tk.call('winico', 'taskbar', 'delete', icon)
     sys.exit(0)
 
+# 在网络日志栏写入信息
+def text_insert(content):
+    t.config(state='normal')
+    t.insert('end',content+'\n\n')
+    t.config(state='disabled')
+
 # 日志文件
 def write_log(log,insert=1): # log为日志 insert参数控制是否插入text窗口
     time_now = int(time.time())
@@ -58,10 +64,9 @@ def write_log(log,insert=1): # log为日志 insert参数控制是否插入text�
     with open('log.txt','a') as text:
         content = f'[{timestamp}] {log}\n'
         text.write(content)
+    
     if insert:
-        t.config(state='normal')
-        t.insert('end',log+'\n\n')
-        t.config(state='disabled')
+        text_insert(log)
 
 # 设置用户信息
 def usr_set(usr_dict):
@@ -90,6 +95,7 @@ def usr_read():
 def auto_login():
     write_log('自动登录功能启动')
     for i in range(180):
+        time.sleep(1)
         code = net_test()
         if  code == 0:
             write_log('开始自动登录')
@@ -99,8 +105,10 @@ def auto_login():
             write_log(f'自动登录:在 {i} 秒停止,已成功联网')
             break
         else:
-            write_log('无法连接至网络')
-            break
+            write_log('无法连接至网络',0)
+
+    if net_test() == 2:
+        text_insert('无法连接至网络')
 
     if usr['autowithdraw'] == 1:
         t.config(state='normal')
@@ -141,8 +149,9 @@ def net_login():
     else:
         write_log('登录:登录失败')
 
-# 判断网络是否连接成功
+# 网络测试
 def net_test():
+    # 多加一层 try 防止判断失误
     try:  
         requests.get('https://www.baidu.com',timeout=2)
         write_log('网络测试:成功联网')
@@ -150,7 +159,7 @@ def net_test():
     except:
         try:
             requests.get('https://www.baidu.com',timeout=2)
-            write_log('网络测试:成功联网')
+            write_log('网络测试:成功联网',0)
             return 1
         except:            
             try:
@@ -158,7 +167,7 @@ def net_test():
                 write_log('网络测试:需要登录')
                 return 0
             except:
-                write_log('网络测试:无法连接至网络')
+                write_log('网络测试:无法连接至网络',0)
                 return 2
 
 # 保持在线
@@ -166,16 +175,7 @@ def stay_online():
     write_log('保持在线功能启动')
     while 1:
         time.sleep(300)
-        code = net_test()
-        if code == 0:
-            write_log('保持在线:网络中断',0)
-            answer = mBox.askyesno('网络中断', '网络中断，是否重连')
-            if answer:
-                net_login()
-        elif code == 1:
-            write_log('保持在线:网络连接正常',0)
-        else:
-            pass
+        net_test()
 
 # 主窗口
 def main_window():
@@ -213,8 +213,9 @@ def main_window():
 
     def button_login():
         if net_test() == 0:
-            net_login()
+            threading.Thread(target=net_login, daemon=True).start()
         else:
+            text_insert('网络已经连接，不要在点啦')
             pass
 
     # 创建按钮
